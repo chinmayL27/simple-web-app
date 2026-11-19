@@ -15,7 +15,7 @@ From this folder, create and activate a virtual environment, install dependencie
 py -m venv .venv
 .venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
-python -m uvicorn app.main:app --reload
+python -m uvicorn app.main:app --reload --host 0.0.0.0
 ```
 
 If PowerShell blocks activation, run the commands without activating by replacing `python` with `.venv\Scripts\python.exe` and `uvicorn` with `.venv\Scripts\python.exe -m uvicorn`.
@@ -29,4 +29,4 @@ Open http://127.0.0.1:8000 in your browser to use the records page, or http://12
 - `GET /records` lists saved records.
 - `GET /records/{record_id}` returns one record or a 404 response.
 
-SQLAlchemy uses parameterized SQL for database writes and reads. The app binds to localhost by default through Uvicorn, so it is available to the local machine.
+SQLAlchemy uses parameterized SQL for database writes and reads. The server listens on all network interfaces. Open http://127.0.0.1:8000 on this machine. To connect from another device on the same network, use this computer’s local IP address, such as http://192.168.1.20:8000, and allow Python through Windows Firewall for private networks.
