@@ -1,48 +1,38 @@
-"""Small FastAPI application with a browser UI and SQLite database."""
-
-import os
-from pathlib import Path
-
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
-from sqlalchemy import Integer, String, create_engine
-from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
+from sqlalchemy import Column, Integer, String, create_engine
+from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./data/app.db")
-if DATABASE_URL.startswith("sqlite"):
-    Path("data").mkdir(exist_ok=True)
-
+# SQLite stores the database in a local file created automatically.
+DATABASE_URL = "sqlite:///./app.db"
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {},
+    connect_args={"check_same_thread": False},
 )
 SessionLocal = sessionmaker(bind=engine, autoflush=False)
-
-
-class Base(DeclarativeBase):
-    pass
+Base = declarative_base()
 
 
 class Record(Base):
     __tablename__ = "records"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    name: Mapped[str] = mapped_column(String(100), nullable=False)
-    description: Mapped[str] = mapped_column(String(500), default="", nullable=False)
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    description = Column(String, nullable=False, default="")
 
 
 Base.metadata.create_all(bind=engine)
 
 
 class RecordCreate(BaseModel):
-    name: str = Field(min_length=1, max_length=100)
-    description: str = Field(default="", max_length=500)
+    name: str = Field(min_length=1)
+    description: str = ""
 
 
-app = FastAPI(title="Application API")
+app = FastAPI()
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
 
@@ -76,7 +66,7 @@ def create_record(record: RecordCreate, db: Session = Depends(get_db)):
 
 @app.get("/records")
 def list_records(db: Session = Depends(get_db)):
-    return db.query(Record).order_by(Record.id).all()
+    return db.query(Record).all()
 
 
 @app.get("/records/{record_id}")
