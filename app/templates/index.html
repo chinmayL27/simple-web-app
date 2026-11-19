@@ -3,41 +3,41 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Interview Practice | Inventory</title>
+  <title>Application | Records</title>
   <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="/"><span class="brand-mark">S</span><span>Simple<span class="brand-light">Ops</span></span></a>
-    <nav><a class="active" href="/">Inventory</a><a href="/docs">API docs <span aria-hidden="true">↗</span></a></nav>
+    <a class="brand" href="/"><span class="brand-mark">S</span><span>Application</span></a>
+    <nav><a class="active" href="/">Records</a><a href="/docs">API docs <span aria-hidden="true">↗</span></a></nav>
     <span class="local-tag"><span class="green-dot"></span> Local workspace</span>
   </header>
   <main>
     <section class="intro">
-      <div><p class="eyebrow">INFRASTRUCTURE INVENTORY</p><h1>Keep track of your assets.</h1><p class="subtitle">A simple place to manage the things running your environment.</p></div>
+      <div><p class="eyebrow">APPLICATION DATA</p><h1>Keep track of your records.</h1><p class="subtitle">Create and view records stored in your database.</p></div>
       <div class="health"><span class="green-dot"></span> API operational</div>
     </section>
-    <section class="summary" aria-label="Inventory summary">
-      <div class="summary-label"><span class="summary-icon">▤</span><span>Tracked assets</span></div>
-      <strong id="item-count">—</strong><small>items in your inventory</small>
+    <section class="summary" aria-label="Records summary">
+      <div class="summary-label"><span class="summary-icon">▤</span><span>Total records</span></div>
+      <strong id="record-count">—</strong><small>records in your database</small>
     </section>
     <section class="content-grid">
-      <section class="panel inventory-panel">
-        <div class="panel-heading"><div><p class="eyebrow">YOUR ENVIRONMENT</p><h2>Inventory</h2></div><span class="count-pill" id="list-count">0 items</span></div>
-        <div id="items" class="items" aria-live="polite"><p class="loading">Loading inventory…</p></div>
+      <section class="panel records-panel">
+        <div class="panel-heading"><div><p class="eyebrow">DATABASE</p><h2>Records</h2></div><span class="count-pill" id="list-count">0 records</span></div>
+        <div id="records" class="items" aria-live="polite"><p class="loading">Loading records…</p></div>
       </section>
       <aside class="panel form-panel">
-        <p class="eyebrow">NEW RECORD</p><h2>Add an asset</h2><p class="form-intro">Record a server, service, or other environment component.</p>
-        <form id="item-form">
-          <label for="name">Asset name <span>Required</span></label><input id="name" name="name" maxlength="100" placeholder="e.g. Web production server" required>
-          <label for="description">Description <span>Optional</span></label><textarea id="description" name="description" maxlength="500" rows="4" placeholder="What does this asset do?"></textarea>
-          <button type="submit"><span>＋</span> Add to inventory</button>
+        <p class="eyebrow">NEW RECORD</p><h2>Add a record</h2><p class="form-intro">Record a server, service, or other environment component.</p>
+        <form id="record-form">
+          <label for="name">Record name <span>Required</span></label><input id="name" name="name" maxlength="100" placeholder="e.g. Example record" required>
+          <label for="description">Description <span>Optional</span></label><textarea id="description" name="description" maxlength="500" rows="4" placeholder="What does this record do?"></textarea>
+          <button type="submit"><span>＋</span> Add record</button>
           <p class="form-message" id="form-message" role="status"></p>
         </form>
-        <div class="storage-note"><span>▣</span><p>Saved locally in SQLite<br><small>Your data stays on this machine.</small></p></div>
+        <div class="storage-note"><span>▣</span><p>Connected to database<br><small>Stored using DATABASE_URL.</small></p></div>
       </aside>
     </section>
-    <footer><span>SimpleOps <span class="footer-sep">/</span> Interview practice scaffold</span><a href="/docs">Explore API endpoints <span aria-hidden="true">↗</span></a></footer>
+    <footer><span>Application <span class="footer-sep">/</span> Database example</span><a href="/docs">Explore API endpoints <span aria-hidden="true">↗</span></a></footer>
   </main>
   <script src="/static/app.js" defer></script>
 </body>

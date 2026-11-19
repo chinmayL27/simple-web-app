@@ -1,49 +1,49 @@
-const itemContainer = document.querySelector("#items");
-const itemCount = document.querySelector("#item-count");
+const recordContainer = document.querySelector("#records");
+const recordCount = document.querySelector("#record-count");
 const listCount = document.querySelector("#list-count");
-const form = document.querySelector("#item-form");
+const form = document.querySelector("#record-form");
 const message = document.querySelector("#form-message");
 
-function renderItems(items) {
-  itemCount.textContent = items.length;
-  listCount.textContent = `${items.length} ${items.length === 1 ? "item" : "items"}`;
+function renderRecords(records) {
+  recordCount.textContent = records.length;
+  listCount.textContent = `${records.length} ${records.length === 1 ? "record" : "records"}`;
 
-  if (items.length === 0) {
-    itemContainer.innerHTML = `
+  if (records.length === 0) {
+    recordContainer.innerHTML = `
       <div class="empty-state">
         <span class="empty-icon" aria-hidden="true">▤</span>
-        <strong>Your inventory is ready</strong>
-        <p>Add your first asset using the form.</p>
+        <strong>Your database is ready</strong>
+        <p>Add your first record using the form.</p>
       </div>`;
     return;
   }
 
-  itemContainer.replaceChildren(...items.map((item) => {
+  recordContainer.replaceChildren(...records.map((record) => {
     const row = document.createElement("article");
-    row.className = "item-row";
+    row.className = "record-row";
     const icon = document.createElement("span");
-    icon.className = "item-icon";
+    icon.className = "record-icon";
     icon.setAttribute("aria-hidden", "true");
     icon.textContent = "▤";
     const copy = document.createElement("div");
-    copy.className = "item-copy";
+    copy.className = "record-copy";
     const name = document.createElement("strong");
-    name.textContent = item.name;
+    name.textContent = record.name;
     const description = document.createElement("p");
-    description.textContent = item.description || "No description provided";
+    description.textContent = record.description || "No description provided";
     const id = document.createElement("span");
-    id.className = "item-id";
-    id.textContent = `ID ${item.id}`;
+    id.className = "record-id";
+    id.textContent = `ID ${record.id}`;
     copy.append(name, description);
     row.append(icon, copy, id);
     return row;
   }));
 }
 
-async function loadItems() {
-  const response = await fetch("/items");
-  if (!response.ok) throw new Error("Could not load inventory.");
-  renderItems(await response.json());
+async function loadRecords() {
+  const response = await fetch("/records");
+  if (!response.ok) throw new Error("Could not load records.");
+  renderRecords(await response.json());
 }
 
 form.addEventListener("submit", async (event) => {
@@ -55,7 +55,7 @@ form.addEventListener("submit", async (event) => {
 
   try {
     const formData = new FormData(form);
-    const response = await fetch("/items", {
+    const response = await fetch("/records", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -64,11 +64,11 @@ form.addEventListener("submit", async (event) => {
       }),
     });
     const result = await response.json();
-    if (!response.ok) throw new Error(result.detail?.[0]?.msg || result.detail || "Could not save asset.");
+    if (!response.ok) throw new Error(result.detail?.[0]?.msg || result.detail || "Could not save record.");
     form.reset();
-    message.textContent = "Asset added to inventory.";
+    message.textContent = "Asset added to records.";
     message.classList.add("success");
-    await loadItems();
+    await loadRecords();
   } catch (error) {
     message.textContent = error.message || "Something went wrong. Please retry.";
   } finally {
@@ -76,8 +76,8 @@ form.addEventListener("submit", async (event) => {
   }
 });
 
-loadItems().catch((error) => {
-  itemContainer.textContent = error.message;
-  itemCount.textContent = "—";
+loadRecords().catch((error) => {
+  recordContainer.textContent = error.message;
+  recordCount.textContent = "—";
   listCount.textContent = "Unavailable";
 });

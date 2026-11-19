@@ -1,40 +1,38 @@
 from contextlib import asynccontextmanager
 import os
-import sqlite3
-from pathlib import Path
 
-from fastapi import Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-
-from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
+from sqlalchemy import Column, Integer, MetaData, String, Table, create_engine, insert, select, text
+from sqlalchemy.engine import Engine
 
-DATABASE_PATH = Path(os.getenv("DATABASE_PATH", "data/app.db"))
-
-
-def connect_database() -> sqlite3.Connection:
-    DATABASE_PATH.parent.mkdir(parents=True, exist_ok=True)
-    connection = sqlite3.connect(DATABASE_PATH)
-    connection.row_factory = sqlite3.Row
-    return connection
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./data/app.db")
+metadata = MetaData()
+records_table = Table(
+    "records", metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("name", String(100), nullable=False),
+    Column("description", String(500), nullable=False, server_default=""),
+)
+engine: Engine = create_engine(
+    DATABASE_URL,
+    connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {},
+)
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    with connect_database() as connection:
-        connection.execute(
-            """CREATE TABLE IF NOT EXISTS items (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                description TEXT NOT NULL DEFAULT ''
-            )"""
-        )
+    if DATABASE_URL.startswith("sqlite"):
+        os.makedirs("data", exist_ok=True)
+    metadata.create_all(engine)
     yield
+    engine.dispose()
 
 
-app = FastAPI(title="Interview Practice API", lifespan=lifespan)
+app = FastAPI(title="Application API", lifespan=lifespan)
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
 
@@ -44,12 +42,12 @@ def home(request: Request):
     return templates.TemplateResponse(request=request, name="index.html")
 
 
-class ItemCreate(BaseModel):
+class RecordCreate(BaseModel):
     name: str = Field(min_length=1, max_length=100)
     description: str = Field(default="", max_length=500)
 
 
-class Item(BaseModel):
+class Record(BaseModel):
     id: int
     name: str
     description: str
@@ -60,34 +58,31 @@ def health():
     return {"status": "ok"}
 
 
-@app.post("/items", response_model=Item, status_code=201)
-def create_item(item: ItemCreate):
-    with connect_database() as connection:
-        cursor = connection.execute(
-            "INSERT INTO items (name, description) VALUES (?, ?)",
-            (item.name, item.description),
+@app.post("/records", response_model=Record, status_code=201)
+def create_record(record: RecordCreate):
+    with engine.begin() as connection:
+        result = connection.execute(
+            insert(records_table).values(name=record.name, description=record.description)
         )
         row = connection.execute(
-            "SELECT id, name, description FROM items WHERE id = ?", (cursor.lastrowid,)
-        ).fetchone()
+            select(records_table).where(records_table.c.id == result.inserted_primary_key[0])
+        ).mappings().one()
     return dict(row)
 
 
-@app.get("/items", response_model=list[Item])
-def list_items():
-    with connect_database() as connection:
-        rows = connection.execute(
-            "SELECT id, name, description FROM items ORDER BY id"
-        ).fetchall()
+@app.get("/records", response_model=list[Record])
+def list_records():
+    with engine.connect() as connection:
+        rows = connection.execute(select(records_table).order_by(records_table.c.id)).mappings().all()
     return [dict(row) for row in rows]
 
 
-@app.get("/items/{item_id}", response_model=Item)
-def get_item(item_id: int):
-    with connect_database() as connection:
+@app.get("/records/{record_id}", response_model=Record)
+def get_record(record_id: int):
+    with engine.connect() as connection:
         row = connection.execute(
-            "SELECT id, name, description FROM items WHERE id = ?", (item_id,)
-        ).fetchone()
+            select(records_table).where(records_table.c.id == record_id)
+        ).mappings().first()
     if row is None:
-        raise HTTPException(status_code=404, detail="Item not found")
+        raise HTTPException(status_code=404, detail="Record not found")
     return dict(row)
