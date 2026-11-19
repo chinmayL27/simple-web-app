@@ -20,7 +20,7 @@ python -m uvicorn app.main:app --reload
 
 If PowerShell blocks activation, run the commands without activating by replacing `python` with `.venv\Scripts\python.exe` and `uvicorn` with `.venv\Scripts\python.exe -m uvicorn`.
 
-Open http://127.0.0.1:8000/docs to explore and call the API interactively. The database and `items` table are created automatically on startup. Set `DATABASE_PATH` to use a different SQLite file.
+Open http://127.0.0.1:8000 in your browser to use the inventory page, or http://127.0.0.1:8000/docs to explore and call the API interactively. The database and `items` table are created automatically on startup. Set `DATABASE_PATH` to use a different SQLite file.
 
 ## Endpoints
 

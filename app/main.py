@@ -3,6 +3,11 @@ import os
 import sqlite3
 from pathlib import Path
 
+from fastapi import Request
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
@@ -30,6 +35,13 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(title="Interview Practice API", lifespan=lifespan)
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+templates = Jinja2Templates(directory="app/templates")
+
+
+@app.get("/", response_class=HTMLResponse)
+def home(request: Request):
+    return templates.TemplateResponse(request=request, name="index.html")
 
 
 class ItemCreate(BaseModel):
